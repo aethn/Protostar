@@ -4,7 +4,10 @@ Solution:
 
 	 ./stack1 `python3 -c "print('A'*64+'dcba')"`
 	
-	The strategy here is very similar to the solution of stack0. However instead of an arbitrary value pushed into modified we want to get the hex value '0x61626364' into modified. The biggest thing here is the endianness of the system, x86 is little endian, so we want to actually end our overflow string with '0x64636261' or 'dcba'. 
+	The strategy here is very similar to the solution of stack0. However instead of an arbitrary value 
+	pushed into modified we want to get the hex value '0x61626364' into modified. The biggest thing here is the 
+	endianness of the system; x86 is little endian, so we want to actually end our overflow string with '0x64636261' 
+	or 'dcba'. 
 
 Analysis: 
 	
