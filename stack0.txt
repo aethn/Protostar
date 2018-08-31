@@ -16,7 +16,11 @@ Analysis:
 	37(main) : This is our goal. 
 
 
-	Because modified is at the bottom of the stack, we expect it to be overwritten by a buffer larger than the allocated space for buffer[64]. The size of the allocation for buffer can be calculated by subtracting the next stack value address after the buffer starting address, in our case modified - buffer_addr = 0x5c - 0x1c = 64 bytes. Then we only need a 65 byte string to modify modified which resides in 0x5c.
+	Because modified is at the bottom of the stack, we expect it to be overwritten by a buffer 
+	larger than the allocated space for buffer[64]. The size of the allocation for buffer can be 
+	calculated by subtracting the next stack value address after the buffer starting address, in our 
+	case modified - buffer_addr = 0x5c - 0x1c = 64 bytes. Then we only need a 65 byte string to modify 
+	modified which resides in 0x5c.
 
 
 (gdb) disas main
